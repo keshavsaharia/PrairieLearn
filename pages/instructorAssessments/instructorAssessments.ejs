@@ -7,14 +7,10 @@
     <script type="text/javascript" src="/localscripts/histmini.js"></script>
   </head>
   <body>
-    <%- include('../partials/navbar', {navPage: 'assessments'}); %>
+    <%- include('../partials/navbar', { navPage: 'assessments' }); %>
     <div id="content" class="container">
-      <div class="panel panel-primary">
-        <div class="panel-heading">
-          <h3 class="panel-title">Assessments</h3>
-        </div>
-
-        <table class="table table-condensed table-hover">
+      <div class="card">
+        <table class="table table-condensed table-hover no-margin">
           <thead>
             <tr>
               <th style="width: 1%"></th>
@@ -35,7 +31,10 @@
             <% } %>
             <tr>
               <td style="width: 1%">
-                <a href="<%= urlPrefix %>/assessment/<%= row.id %>/" class="btn btn-<%= row.color %> btn-xs" role="button"><%= row.label %></a>
+                <a href="<%= urlPrefix %>/assessment/<%= row.id %>/" class="btn btn-<%= row.color %> btn-sm"
+                  role="button">
+                  <%= row.label %>
+                </a>
               </td>
               <td>
                 <a href="<%= urlPrefix %>/assessment/<%= row.id %>/"><%= row.title %></a>
@@ -78,10 +77,13 @@
           </tbody>
         </table>
 
-        <div class="panel-footer">
-          <p class="no-bottom-margin">
-            Download <a href="<%= urlPrefix %>/assessments/<%= csvFilename %>"><%= csvFilename %></a>
-            (includes more statistics columns than displayed above)
+        <div class="card-footer text-right">
+          <a class="btn btn-success" href="<%= urlPrefix %>/assessments/<%= csvFilename %>">
+            <!--  -->
+            <i class="fa fa-download"></i> Download
+          </a>
+          <p class="no-margin text-muted">
+            <small><%= csvFilename %></small>
           </p>
         </div>
 

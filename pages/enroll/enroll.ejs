@@ -6,32 +6,67 @@
   <body>
     <script>
       $(function () {
-          $('[data-toggle="popover"]').popover()
+          $('[data-toggle="popover"]').popover();
+          $('#course-search').keyup(function() {
+            var query = $(this).val().toLowerCase().trim();
+            if (query.length == 0) {
+              $('#course-list > tr').each(function() {
+                $(this).show();
+              });
+            }
+            else $('#course-list > tr').each(function() {
+              var title = $(this).data('title').toLowerCase(),
+                  shortName = $(this).data('short').toLowerCase(),
+                  longName = $(this).data('long').toLowerCase();
+
+              if (title.indexOf(query) >= 0 ||
+                  shortName.indexOf(query) >= 0 ||
+                  longName.indexOf(query) >= 0) {
+                    $(this).show();
+                  }
+                else {
+                  $(this).hide();
+                }
+            })
+          });
       });
     </script>
     <%- include('../partials/navbar', {navPage: 'enroll'}); %>
     <div id="content" class="container">
-      <div class="panel panel-primary">
-        <div class="panel-heading">
-          <h3 class="panel-title">Courses</h3>
-        </div>
-
-        <div class="panel-body">
-          <a href="<%= plainUrlPrefix %>" class="btn btn-primary">
-            Back to course list
-          </a>
-        </div>
-        
-        <table class="table table-condensed table-hover table-striped">
-          <tbody>
-            <% course_instances.forEach(function(course_instance) { %>
+      <div class="input-group">
+        <input id="course-search" type="text" class="form-control" placeholder="Find a course"
+          aria-label="Find a course">
+        <span class="input-group-btn">
+          <button class="btn btn-secondary" type="button">Search</button>
+        </span>
+      </div>
+      <br>
+      <div class="card">
+        <table class="table table-condensed table-hover table-striped" style="margin-bottom:0px;">
+          <thead>
             <tr>
+              <td style="width:200px;padding:0px;"></td>
+              <td style="padding:0px;"></td>
+              <td style="width:1px;padding:0px;"></td>
+            </tr>
+          </thead>
+          <tbody id="course-list">
+            <% course_instances.forEach(function(course_instance) { %>
+            <tr data-short="<%= course_instance.short_name %>"
+                data-long="<%= course_instance.long_name %>"
+                data-title="<%= course_instance.title %>">
               <td>
-                <%= course_instance.label %>
+                <p class="text-right no-margin">
+                  <strong><%= course_instance.short_name %></strong>
+                  <span class="text-muted"><%= course_instance.long_name %></span>
+                </p>
               </td>
               <td>
+                <%= course_instance.title %>
+              </td>
+              <td class="text-right">
                 <% if (!course_instance.enrolled) { %>
-                <a tabindex="0" class="btn btn-xs btn-info" role="button"
+                <a tabindex="0" class="btn btn-sm btn-primary btn-click" role="button"
                    data-toggle="popover" data-trigger="focus" data-container="body"
                    data-html="true" data-placement="auto" title="Confirm add"
                    data-content="
@@ -40,17 +75,14 @@
                                    <input type=&quot;hidden&quot; name=&quot;__csrf_token&quot; value=&quot;<%= __csrf_token %>&quot;>
                                    <input type=&quot;hidden&quot; name=&quot;course_instance_id&quot;
                                           value=&quot;<%= course_instance.course_instance_id %>&quot;>
-                                   <button type=&quot;submit&quot; class=&quot;btn btn-info&quot;>
+                                   <button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;>
                                      Add <%= course_instance.short_label %>
                                    </button>
                                  </form>
                                  ">
-                  Add course
+                  Join course
                 </a>
-                <% } %>
-              </td>
-              <td>
-                <% if (course_instance.enrolled) { %>
+                <% } else { %>
                 <a tabindex="0" class="btn btn-xs btn-danger" role="button"
                    data-toggle="popover" data-trigger="focus" data-container="body"
                    data-html="true" data-placement="auto" title="Confirm remove"

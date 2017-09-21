@@ -1,11 +1,36 @@
 body {
   overflow-y: scroll;
 }
-
 canvas {
     border: 1px solid #aaa;
 }
-
+#content {
+    padding-top: 15px;
+}
+.btn-click:hover {
+  cursor: pointer;
+}
+/* Removed in Bootstrap 4 */
+.btn-xs, .btn-group-xs > .btn {
+  padding: .125rem .25rem;
+  font-size: .85rem;
+  line-height: 1.5;
+  border-radius: .2rem;
+}
+.no-margin {
+  margin: 0px;
+}
+.navbar-tabs {
+  padding-top: 5px;
+  padding-left: 15px;
+}
+.navbar-tabs .nav-link:not(.active) {
+  color: rgba(255,255,255,.75);
+}
+.navbar-tabs .nav-link:not(.active):hover {
+  color: rgba(255,255,255,.9);
+  border-color: rgba(0, 0, 0, 0);
+}
 .jumbotron {
   text-align: center;
   background-color: transparent;

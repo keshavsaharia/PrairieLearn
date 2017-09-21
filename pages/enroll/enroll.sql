@@ -2,6 +2,9 @@
 SELECT
     c.short_name || ': ' || c.title || ', ' || ci.long_name AS label,
     c.short_name || ', ' || ci.short_name AS short_label,
+    c.short_name AS short_name,
+    ci.long_name AS long_name,
+    c.title AS title,
     ci.id AS course_instance_id,
     (e.id IS NOT NULL) AS enrolled
 FROM
