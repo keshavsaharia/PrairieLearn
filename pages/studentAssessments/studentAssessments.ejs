@@ -9,14 +9,12 @@
           $('[data-toggle="popover"]').popover()
       });
     </script>
-    <%- include('../partials/navbar', {navPage: 'assessments'}); %>
+    <%- include('../partials/navbar', { navPage: 'assessments' }); %>
     <div id="content" class="container">
-      <div class="panel panel-primary">
-        <div class="panel-heading">
-          <h3 class="panel-title">Assessments</h3>
-        </div>
+      <div class="card">
+        <h3 class="card-header">Assessments</h3>
 
-        <table class="table table-condensed table-hover">
+        <table class="table table-condensed table-hover no-margin">
           <thead>
             <tr>
               <th style="width: 1%"></th>

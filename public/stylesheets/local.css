@@ -6,8 +6,9 @@ canvas {
 }
 #content {
     padding-top: 15px;
+    padding-bottom: 30px;
 }
-.btn-click:hover {
+.btn-click:hover, .clickable:hover {
   cursor: pointer;
 }
 /* Removed in Bootstrap 4 */

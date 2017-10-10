@@ -8,21 +8,20 @@
   <div class="collapse navbar-collapse" id="navbar-collapse">
     <ul class="nav navbar-nav mr-auto" id="main-nav">
       <li class="nav-item">
-          <a class="nav-link" href="<%= plainUrlPrefix %>">Home</a>
+        <a class="nav-link" href="<%= plainUrlPrefix %>">Home</a>
       </li>
 
-      <% if (authz_data.has_course_permission_view) { %>
-      <li class="nav-item <% if (navPage == 'courseOverview') { %>active<% } %>">
-        <a class="nav-link" href="<%= urlPrefix %>/course"><%= course.short_name %></a></li>
-      <% } %>
-
-      <li class="nav-item <% if (navPage != 'courseOverview') { %>active<% } %>">
-        <a class="nav-link" href="<%= urlPrefix %>/assessments"><%= course.short_name %>, <%= course_instance.short_name %></a>
+      <li class="nav-item <% if (['courseOverview', 'assessments', 'questions',
+        'errors', 'gradebook'].indexOf(navPage) >= 0) { %>active<% } %>">
+        <a class="nav-link" href="<%= urlPrefix %>/assessments">
+          <%= course.short_name %>, <%= course_instance.short_name %>
+        </a>
       </li>
 
       <% if (!devMode && authz_data.has_course_permission_edit) { %>
       <li <% if (navPage == "sync")        { %>class="active"<% } %>>
-        <a class="nav-link" href="<%= urlPrefix %>/syncs">Sync</a></li>
+        <a class="nav-link" href="<%= urlPrefix %>/syncs">Sync</a>
+      </li>
       <% } %>
 
       <% if (typeof assessment_label != 'undefined' && typeof assessment != 'undefined') { %>
@@ -34,16 +33,27 @@
       <% } %>
     </ul>
 
-    <form class="form-inline my-0 col-md-6 col-sm-6">
+    <form class="form-inline my-2 my-sm-0">
 
-      <a class="btn btn-link" href="<%= urlPrefix %>/effectiveUser">
+      <a class="btn btn-primary-outline
+        <%= (navPage == 'effective') ? 'text-light' : 'text-secondary' %>"
+        href="<%= urlPrefix %>/effectiveUser">
         <%= authz_data.user.name %>
       </a>
 
-      <span class="text-secondary">
-        <i class="fa fa-<%= (authz_data.role == 'Instructor') ? 'users' : 'user' %>"></i>
-        <i class="fa fa-<%= (authz_data.mode == 'Public') ? 'globe' : 'lock' %>"></i>
+      <span class="text-secondary" id="navbar-tooltips">
+        <i class="fa fa-<%= (authz_data.role == 'Instructor') ? 'users' : 'user' %>"
+           data-toggle="tooltip" data-placement="bottom"
+           title="<%= (authz_data.role == 'Instructor') ? 'Instructor' : 'Student' %>"></i>
+        <i class="fa fa-<%= (authz_data.mode == 'Public') ? 'globe' : 'lock' %>"
+           data-toggle="tooltip" data-placement="bottom"
+           title="<%= (authz_data.role == 'Public') ? 'Public' : 'Exam' %>"></i>
       </span>
+      <script>
+      $(function () {
+        $('#navbar-tooltips [data-toggle="tooltip"]').tooltip();
+      })
+      </script>
 
       &nbsp;&nbsp;
 
@@ -53,7 +63,8 @@
           Instructor <span class="caret"></span>
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <a class="dropdown-item" href="<%= plainUrlPrefix %>/course_instance/<%= course_instance.id %>/assessments">
+          <a class="dropdown-item"
+             href="<%= plainUrlPrefix %>/course_instance/<%= course_instance.id %>/assessments">
             Student view
           </a>
         </div>
@@ -61,7 +72,10 @@
 
       &nbsp;&nbsp;
       <% if (devMode) { %>
-          <a class="btn btn-outline-primary" href="<%= urlPrefix %>/loadFromDisk">Load from disk</a>
+        <a class="btn btn-outline-primary"
+           href="<%= urlPrefix %>/loadFromDisk">
+          Load from disk
+        </a>
       <% } %>
       &nbsp;&nbsp;
       <%- include('logout'); %>
@@ -69,25 +83,41 @@
   </div>
 </nav>
 <ul class="nav nav-tabs navbar-tabs bg-dark">
+  <% if (authz_data.has_course_permission_view) { %>
+  <li class="nav-item">
+    <a class="nav-link <% if (navPage == 'courseOverview') { %>active<% } %>"
+       href="<%= urlPrefix %>/course">
+       Course
+     </a>
+  </li>
+  <% } %>
+
   <li class="nav-item">
     <a class="nav-link <% if (navPage == 'assessments') { %>active<% }%>"
-       href="<%= urlPrefix %>/assessments">Assessments</a>
+       href="<%= urlPrefix %>/assessments">
+       Assessments
+     </a>
   </li>
   <li class="nav-item">
     <a class="nav-link <% if (navPage == 'questions') { %>active<% }%>"
-       href="<%= urlPrefix %>/questions">Questions</a>
-  </li>
-  <li  class="nav-item">
-    <a class="nav-link <% if (navPage == 'errors') { %>active<% }%>"
-       href="<%= urlPrefix %>/errors">Errors
-      <%- include('errorBadge', {
-        count: navbarOpenErrorCount,
-        suppressLink: true
-      }) %>
+       href="<%= urlPrefix %>/questions">
+       Questions
     </a>
   </li>
   <li  class="nav-item">
+    <a class="nav-link <% if (navPage == 'errors') { %>active<% }%>"
+       href="<%= urlPrefix %>/errors">
+        Errors
+        <%- include('errorBadge', {
+          count: navbarOpenErrorCount,
+          suppressLink: true
+        }) %>
+    </a>
+  </li>
+  <li class="nav-item">
     <a class="nav-link <% if (navPage == 'gradebook') { %>active<% }%>"
-       href="<%= urlPrefix %>/gradebook">Gradebook</a>
+       href="<%= urlPrefix %>/gradebook">
+       Gradebook
+    </a>
   </li>
 </ul>

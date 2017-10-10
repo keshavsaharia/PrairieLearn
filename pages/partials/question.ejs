@@ -51,25 +51,23 @@
   </div>
   <% }); %>
 
-
+  <br>
   <% if (question.type == 'Freeform') { %>
   <form class="question-form" name="question-form" method="POST">
-    <div class="panel panel-primary question-block">
-      <div class="panel-heading">
+    <div class="card question-block">
         <% if (question_context == 'student_homework') { %>
-            <h3 class="panel-title"><%= instance_question_info.question_number %>. <%= question.title %></h3>
+            <h3 class="card-header"><%= instance_question_info.question_number %>. <%= question.title %></h3>
         <% } else if (question_context == 'student_exam') { %>
             <!-- FIXME: insert question number properly -->
         <% } else if (question_context == 'instructor') { %>
-            <h3 class="panel-title"><%= question.title %></h3>
+            <h3 class="card-header"><%= question.title %></h3>
         <% } else { %>
             <% throw Error('unknown question_context: ' + question_context); %>
         <% } %>
-      </div>
-      <div class="panel-body question-body">
+      <div class="card-body question-body">
         <%- questionHtml %>
       </div>
-      <div class="panel-footer">
+      <div class="card-footer">
         <% if (showTrueAnswer && (question_context == 'student_exam')) { %>
         This question is complete and cannot be answered again.
         <% } else { %>
@@ -95,6 +93,9 @@
           </div>
           <div class="col-sm-6">
             <span class="pull-right">
+              <% if (devMode || authz_data.has_instructor_view || is_administrator) { %>
+                <a href="edit#question" class="btn btn-success question-edit">Edit</a>
+              <% } %>
               <% if (showSaveButton) { %><button class="btn btn-info question-save" name="__action" value="save">Save</button><% } %>
               <input type="hidden" name="__variant_id" value="<%= variant.id %>">
               <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
@@ -153,6 +154,9 @@
             </div>
           <div class="col-sm-6">
             <span class="pull-right">
+              <% if (devMode || authz_data.has_instructor_view || is_administrator) { %>
+                  <a href="edit" class="btn btn-success question-edit">Edit</a>
+              <% } %>
               <% if (showSaveButton) { %><button class="btn btn-info question-save">Save</button><% } %>
               <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
               <input type="hidden" name="postData" class="postData">
@@ -169,31 +173,29 @@
   <% } %>
 
   <% if (showTrueAnswer) { %>
-  <div class="panel panel-info grading-block">
-    <div class="panel-heading">
-      <h3 class="panel-title">Correct answer</h3>
-    </div>
-    <div class="panel-body answer-body">
+  <div class="card grading-block">
+    <h3 class="card-header">Correct answer</h3>
+    <div class="card-body answer-body">
       <%- answerHtml %>
     </div>
   </div>
   <% } %>
 
   <% if (showSubmissions) { %>
-  <div class="panel-group">
+  <div class="card-group">
     <% submissions.forEach(function(submission, iSubmission) { %>
-    <div class="panel panel-info pastsubmission-block">
-      <div class="panel-heading">
-        <h3 class="panel-title">
+    <div class="card pastsubmission-block">
+      <h3 class="card-header">
           Submitted answer
           <% if (submissions.length > 1) { %>
           <%= submissions.length - iSubmission %>
           <% } %>
-        </h3>
-        <%- include('../partials/submissionStatus', {submission: submission}); %>
-        <small>Submitted at <%- submission.formatted_date %></small>
-      </div>
-      <div class="panel-body submission-body" id="submission-<%= iSubmission %>-body">
+          <div class="pull-right">
+              <%- include('../partials/submissionStatus', {submission: submission}); %>
+              <small>Submitted at <%- submission.formatted_date %></small>
+          </div>
+      </h3>
+      <div class="card-body submission-body" id="submission-<%= iSubmission %>-body">
         <%- submissionHtmls[iSubmission] %>
       </div>
     </div>

@@ -2,39 +2,192 @@
 <html>
   <head>
     <%- include('../partials/head'); %>
+    <script>
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+    })
+    </script>
   </head>
   <body>
-    <%- include('../partials/navbar', {navPage: 'effective'}); %>
-    <div id="content" class="container">
+    <%- include('../partials/navbar', { navPage: 'effective' }); %>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <br>
+          <div class="card">
+            <div class="card-header">
+              Authenticated user
+              <i class="fa fa-question-circle"
+                 data-toggle="popover"
+                 title="Authentication values"
+                 data-html="true"
+                 data-trigger="hover"
+                 data-content="These are the values you logged in with. The
+                 <em>effective</em> values on the right allow you to view PrairieLearn
+                 as if you had a different <em>role</em>, as if you were a specific
+                 other person with a different <em>UID</em>, or as if PrairieLearn
+                 was running in a different <em>mode</em>. This can be used to test
+                 out how PrairieLearn will look from different points of view."></i>
+            </div>
+            <table class="table no-margin">
+              <thead>
+                <tr>
+                  <td style="width:100px;padding:0px;"></td>
+                  <td style="padding:0px;"></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-right"><strong>UID</strong></td>
+                  <td><%= authz_data.authn_user.uid %></td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>Name</strong></td>
+                  <td><%= authz_data.authn_user.name %></td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>Role</strong></td>
+                  <td><%= authz_data.authn_role %></td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>Mode</strong></td>
+                  <td><%= authz_data.authn_mode %></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="card-footer text-muted">
+              <form id="resetForm" class="text-right" method="POST">
+                <input type="hidden" name="__action" value="reset">
+                <button type="submit" class="btn btn-primary">Reset to these values</button>
+                <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
+              </form>
+            </div>
+          </div>
 
-      <div class="panel panel-info">
-        <div class="panel-heading">
-          <h3 class="panel-title">Authenticated user</h3>
         </div>
+        <div class="col-md-6">
+          <br>
+          <div class="card">
+            <div class="card-header">
+              Effective user
+              <i class="fa fa-question-circle"
+                 data-toggle="popover"
+                 title="Authentication values"
+                 data-html="true"
+                 data-trigger="hover"
+                 data-content="These are the values you are viewing PrairieLearn with.
+                  You can change these values to test out how PrairieLearn will look
+                  for different users, roles, and modes."></i>
+            </div>
+            <table class="table no-margin">
+              <thead>
+                <tr>
+                  <td style="width:100px;padding:0px;"></td>
+                  <td style="padding:0px;"></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-right"><strong>UID</strong></td>
+                  <td><%= user.uid %>
+                    <button class="btn btn-link btn-xs" type="button"
+                          data-toggle="collapse"
+                          style="float:right"
+                          data-target="#edit-effective-uid">
+                      edit
+                    </button>
+                  </td>
+                </tr>
+                <tr class="collapse" id="edit-effective-uid">
+                  <td colspan="2">
+                    <form id="changeUidForm" method="POST">
+                      <div class="form-group">
+                        <label for="changeEffectiveUid">Change effective UID to</label>
+                        <input list="userList" type="text"
+                               class="form-control"
+                               name="pl_requested_uid"
+                               id="changeEffectiveUid"
+                               placeholder="username@domain.org">
+                        <datalist id="userList">
+                          <% if (available_uids) { %>
+                          <% available_uids.forEach(function(available_uid) { %>
+                          <option value="<%= available_uid %>"><%= available_uid %></option>
+                          <% }); %>
+                          <% } %>
+                        </datalist>
+                      </div>
+                      <input type="hidden" name="__action" value="changeUid">
+                      <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
+                      <div class="text-right">
+                        <button class="btn btn-secondary" type="button"
+                              data-toggle="collapse"
+                              data-target="#edit-effective-uid">
+                          Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">Change UID</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>Name</strong></td>
+                  <td><%= user.name %></td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>Role</strong></td>
+                  <td>
+                    <%= authz_data.role %>
+                    <button class="btn btn-link btn-xs" type="button"
+                          data-toggle="collapse"
+                          style="float:right"
+                          data-target="#edit-effective-role">
+                      edit
+                    </button>
+                  </td>
+                </tr>
+                <tr class="collapse" id="edit-effective-role">
+                  <td colspan="2">
+                    <form id="changeRoleForm" method="POST">
+                      <div class="form-group">
+                        <label for="changeEffectiveRole">Change effective role to:</label>
+                        <select class="form-control" id="changeEffectiveRole" name="pl_requested_role">
+                          <% available_roles.reverse().forEach(function(available_role) { %>
+                          <% if (available_role == authz_data.role) { %>
+                          <option value="<%= available_role %>" selected><%= available_role %> (current)</option>
+                          <% } else { %>
+                          <option value="<%= available_role %>"><%= available_role %></option>
+                          <% } %>
+                          <% }); %>
+                        </select>
+                      </div>
+                      <input type="hidden" name="__action" value="changeRole">
+                      <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
+                      <div class="text-right">
+                        <button type="submit" class="btn btn-default">Change role</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>Mode</strong></td>
+                  <td><%= authz_data.mode %></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="card-footer text-muted">
+              <form id="resetForm" class="text-right" method="POST">
+                <input type="hidden" name="__action" value="reset">
+                <button type="submit" class="btn btn-success">Change values</button>
+                <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
+              </form>
+            </div>
+          </div>
 
-        <div class="panel-body">
-          <p><strong>Authenticated UID:</strong> <%= authz_data.authn_user.uid %></p>
-          <p><strong>Authenticated name:</strong> <%= authz_data.authn_user.name %></p>
-          <p><strong>Authenticated role:</strong> <%= authz_data.authn_role %></p>
-          <p><strong>Authenticated mode:</strong> <%= authz_data.authn_mode %></p>
-
-          <form id="resetForm" method="POST">
-            <input type="hidden" name="__action" value="reset">
-            <button type="submit" class="btn btn-info">Reset to these values</button>
-            <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
-          </form>
-        </div>
-
-        <div class="panel-footer">
-          <p class="no-bottom-margin">
-            <small>
-              The <em>authenticated</em> values above are the ones that you logged in with. The <em>effective</em> values below allow you to view PrairieLearn as if you had a different <em>role</em>, as if you were a specific other person with a different <em>UID</em>, or as if PrairieLearn was running in a different <em>mode</em>. This can be used to test out how PrairieLearn will look from different points of view. The “Reset to these values” button above will reset all effective values below to your authenticated values. Effective values are also reset when you switch to a different course instance.
-            </small>
-            </small>
-          </p>
         </div>
       </div>
+    </div>
 
+    <div id="content" class="container">
       <!-- #################################################################################### -->
 
       <div class="panel panel-primary">
@@ -87,7 +240,7 @@
           <p><strong>Effective name:</strong> <%= user.name %></p>
 
           <div class="well well-sm no-bottom-margin">
-            <form id="changeUidForm" class="form-inline" method="POST">
+            <!-- <form id="changeUidForm" class="form-inline" method="POST">
               <div class="form-group">
                 <label for="changeEffectiveUid">Change effective UID to:</label>
                 <input list="userList" type="text" class="form-control"
@@ -104,14 +257,14 @@
               <input type="hidden" name="__action" value="changeUid">
               <input type="hidden" name="__csrf_token" value="<%= __csrf_token %>">
               <button type="submit" class="btn btn-default">Change UID</button>
-            </form>
+            </form> -->
           </div>
         </div>
 
         <div class="panel-footer">
           <p class="no-bottom-margin">
             <small>
-              Changing your effective user identity to another person allows you to see PrairieLearn exactly as they would see it. You cannot emulate an effective user with a higher access level than your own.              
+              Changing your effective user identity to another person allows you to see PrairieLearn exactly as they would see it. You cannot emulate an effective user with a higher access level than your own.
             </small>
           </p>
         </div>

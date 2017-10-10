@@ -9,57 +9,91 @@
           $('[data-toggle="popover"]').popover()
       });
     </script>
-    <%- include('../partials/navbar', {navPage: 'assessment_instance'}); %>
+    <%- include('../partials/navbar', { navPage: 'assessment_instance' }); %>
     <div id="content" class="container">
-      <div class="panel panel-primary">
-        <div class="panel-heading">
-          <h3 class="panel-title"><%= assessment_set.abbreviation %><%= assessment.number %>: <%= assessment.title %></h3>
+      <div class="card">
+        <h3 class="card-header">
+          <span class="pull-right" style="width:5em;">
+
+            <small class="text-center text-muted"
+                   style="font-size:24px;display:block;padding-bottom:10px;">
+              <%= assessment_instance.points %> / <%= assessment_instance.max_points %>
+            </small>
+            <%- include('../partials/scorebar', {score: assessment_instance.score_perc}) %>
+          </span>
+          <%= assessment_set.abbreviation %>
+          <%= assessment.number %>: <%= assessment.title %>
+          <br>
+          <button class="btn btn-outline-success btn-xs btn-click"
+                  data-toggle="modal" data-target="#instructionModal">
+                  Instructions
+          </button>
+          <button class="btn btn-link text-secondary btn-xs" disabled>
+            <%= authz_result.credit_date_string %>
+            available credit</button>
+          <%- include('../partials/studentAccessRulesPopover', {
+              accessRules: authz_result.access_rules,
+              assessmentSetName: assessment_set.name,
+              assessmentNumber: assessment.number,
+          }) %>
+        </h3>
+
+        <div class="modal fade" id="instructionModal" tabindex="-1" role="dialog">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Instructions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <table>
+                  <thead style="opacity:0">
+                    <tr><td style="width:40px"></td><td></td></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-primary"><i class="fa fa-list-ol"></i></td>
+                      <td>Answer questions in any order.</td>
+                    </tr>
+                    <tr>
+                      <td class="text-primary"><i class="fa fa-repeat"></i></td>
+                      <td>Questions can be repeated.</td>
+                    </tr>
+                    <tr>
+                      <td class="text-primary"><i class="fa fa-tasks"></i></td>
+                      <td>Not all questions must be completed.</td>
+                    </tr>
+                    <tr><td colspan="2"><hr></td></tr>
+                    <tr>
+                      <td class="text-success"><i class="fa fa-check-circle"></i></td>
+                      <td>
+                        Answering a question correctly will increase
+                        your score by its current value<%= (assessment.constant_question_value ? '.' :
+                          ', and will also increase its value.') %>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-secondary"><i class="fa fa-plus-circle"></i></td>
+                      <td>Your total score is the sum of all question points you have earned.</td>
+                    </tr>
+                    <tr>
+                      <td class="text-danger"><i class="fa fa-times-circle"></i></td>
+                      <td>Answering a question incorrectly will reset its value.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-primary">Got it</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="panel-body">
-          <div class="well well-sm small-bottom-margin">
-            <div class="row">
-              <div class="col-md-3 col-sm-6 col-xs-12">
-                Total points: <%= assessment_instance.points %>/<%= assessment_instance.max_points %>
-              </div>
-              <div class="col-md-3 col-sm-6 col-xs-12">
-                <%- include('../partials/scorebar', {score: assessment_instance.score_perc}) %>
-              </div>
-              <div class="col-md-6 col-sm-12 col-xs-12">
-                Available credit: <%= authz_result.credit_date_string %>
-                <%- include('../partials/studentAccessRulesPopover', {
-                    accessRules: authz_result.access_rules,
-                    assessmentSetName: assessment_set.name,
-                    assessmentNumber: assessment.number,
-                    }) %>
-              </div>
-            </div> <!-- row -->
-          </div> <!-- well -->
 
-          <div class="well well-sm no-bottom-margin">
-            <div class="row">
-              <div class="col-xs-12">
-                <p class="no-bottom-margin"><small>Answer questions in
-                    any order. Questions can be repeated and not all
-                    questions must be completed. Answering a question
-                    correctly will increase its score by its current
-                    value<%= (assessment.constant_question_value ? '.' : ', and will also increase its value.') %> Answering
-                    a question incorrectly will reset its value. Total
-                    points is the sum of all question
-                    points.</small></p>
-              </div>
-            </div> <!-- row -->
-          </div> <!-- well -->
-
-          <% if (assessment_text_templated) { %>
-          <div class="well well-sm small-bottom-margin">
-            <%- assessment_text_templated %>
-          </div> <!-- well -->
-          <% } %>
-
-        </div> <!-- panel-body -->
-
-        <table class="table table-condensed table-hover">
+        <table class="table table-condensed table-hover no-margin">
           <thead>
             <tr>
               <th>Question</th>
@@ -77,8 +111,11 @@
             <% } %>
             <tr>
               <td>
+                <span class="badge badge-pill badge-primary">
+                  <%= question.question_number %>
+                </span>
                 <a href="<%= urlPrefix %>/instance_question/<%= question.id %>/">
-                  <%= question.question_number %>. <%= question.question_title %>
+                  <%= question.question_title %>
                 </a>
               </td>
               <td class="cell-center"><%- include('../partials/questionValue', {value: question.current_value});  %></td>

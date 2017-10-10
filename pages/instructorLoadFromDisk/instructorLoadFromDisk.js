@@ -37,7 +37,8 @@ var update = function(locals, callback) {
                     if (err) {
                         job.info('File not found: ' + infoCourseFile + ', skipping...');
                         callback(null);
-                    } else {
+                    }
+                    else {
                         job.info('Found file ' + infoCourseFile + ', loading...');
                         syncFromDisk.syncOrCreateDiskToSql(courseDir, job, function(err) {
                             if (ERR(err, callback)) return;

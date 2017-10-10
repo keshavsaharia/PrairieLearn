@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%- include('../partials/head'); %>
+    <script type="text/javascript" src="/javascripts/socket.io.js"></script>
+    <script>
+      document.urlPrefix = '<%= urlPrefix %>';
+    </script>
+    <% if (question.type != 'Freeform') { %>
+    <script type="text/javascript" src="/javascripts/lodash.min.js"></script>
+    <script type="text/javascript" src="/javascripts/require.js"></script>
+    <script type="text/javascript" src="/localscripts/question.js"></script>
+    <script type="text/javascript" src="/localscripts/question<%= effectiveQuestionType %>.js"></script>
+    <% } %>
+
+    <script src="/javascripts/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/javascripts/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/javascripts/ace/mode-python.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript">
+    $(function() {
+      var initialized = {};
+      var csrfToken = "<%= __csrf_token %>";
+      //var questionPath = "<%= %>";
+
+      $('.question-container .nav-link').click(function() {
+        var panel = $(this).attr('href').substring(1);
+        window.location.hash = panel.substring(0, panel.indexOf('-'));
+
+        if (! initialized[panel] && $('#' + panel).data('editable')) {
+          initialized[panel] = true;
+          $('#' + panel + '-editor').css('height', '400px');
+          var editor = ace.edit(panel + '-editor');
+          editor.$blockScrolling = Infinity;
+          window.editor = editor;
+
+          editor.setTheme("ace/theme/monokai");
+          editor.getSession().setMode("ace/mode/" + panel.substring(panel.indexOf('-') + 1));
+
+          var currentValue = editor.getValue();
+          $('#' + panel + ' .save-button')
+            .attr('disabled', 'true');
+          editor.getSession().on('change', function() {
+              $('#' + panel + ' .save-button').attr('disabled',
+                  editor.getValue() == currentValue);
+          });
+
+          $('#' + panel + ' a[data-insert]').each(function() {
+              var insertItem = $(this);
+              var insertHtml = insertItem.data('insert');
+              var cursor = insertHtml.indexOf('|');
+              if (cursor >= 0) {
+                  insertHtml = insertHtml.substring(0, cursor) +
+                               insertHtml.substring(cursor + 1);
+              }
+
+              insertItem.click(function() {
+                  var curPos = editor.getCursorPosition();
+                  editor.getSession().insert(curPos, insertHtml);
+                  if (cursor >= 0) {
+                      //curPos.column = curPos.column - cursor;
+                      editor.moveCursorTo(curPos.row, curPos.column - 5);
+                  }
+                  editor.focus();
+              });
+
+          });
+
+          $('#' + panel + ' .save-button > i').hide();
+          $('#' + panel + ' .save-button').click(function() {
+              var button = $(this);
+              button.attr('disabled', 'true');
+
+              var xhr = new XMLHttpRequest();
+              xhr.open("POST", document.URL, true);
+              xhr.setRequestHeader('x-csrf-token', csrfToken);
+              xhr.setRequestHeader("Content-Type", "application/json");
+
+              xhr.onreadystatechange = function() {
+                  if(xhr.readyState == 4 && xhr.status == 200) {
+                      console.log(xhr.responseText);
+                      button.attr('disabled', 'false');
+                      currentValue = editor.getValue();
+                  }
+              };
+
+              xhr.send(JSON.stringify({
+                  file: panel,
+                  value: editor.getValue()
+              }));
+          });
+        }
+      });
+
+      if (window.location.hash.length > 0) {
+        $('.question-container .nav-link[href^="' + window.location.hash + '"]').click();
+      }
+    })
+    </script>
+
+  </head>
+  <body>
+    <%- include('../partials/navbar', {navPage: ''}); %>
+    <div id="content" class="container">
+
+      <div id="question-0" class="question-container">
+        <div class="card">
+          <h4 class="card-header">
+            Question <%= question.qid %>
+          </h4>
+          <ul class="nav nav-tabs text-center" style="padding:15px 10px 0 10px;">
+            <li class="nav-item">
+              <a class="nav-link active" data-toggle="tab" href="#info-json">Information<br>
+                <small><code>info.json</code></small></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#question-html">Question<br>
+                <small><code>question.html</code></small></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#server-python">Grader<br>
+                <small><code>server.py</code></small></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#client-files-upload">Question Files<br>
+                <small><code>clientFilesQuestion</code></small></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#course-files-upload">Course Files<br>
+                <small><code>clientFilesCourse</code></small></a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="info-json" role="tabpanel">
+              <table class="table table-striped no-margin">
+                <thead>
+                  <tr>
+                    <td style="border-top:none"></td>
+                    <td style="border-top:none"></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% ['uuid', 'title', 'topic', 'type'].forEach(function(key_name) { %>
+                  <tr>
+                    <td class="text-right">
+                      <strong><%= key_name %></strong>
+                    </td>
+                    <td>
+                      <input class="form-control" value="<%= infoJson[key_name] || '' %>">
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <div class="tab-pane" id="question-html" role="tabpanel" data-editable="true">
+                <div style="padding:5px 15px">
+                <div class="btn-toolbar justify-content-between" role="toolbar">
+                    <div class="btn-group" role="group">
+                        <div class="btn-group" role="group">
+                          <button id="insert-question-panel" type="button"
+                            class="btn btn-danger dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Panels
+                          </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item clickable" data-insert="<pl_question_panel>|</pl_question_panel>">
+                                <i class="fa fa-fw fa-dot-circle-o"></i> Question panel
+                            </a>
+                            <a class="dropdown-item clickable" data-insert="<pl_submission_panel>|</pl_submission_panel>">
+                                <i class="fa fa-fw fa-check-square-o"></i> Submission panel
+                            </a>
+                            <a class="dropdown-item clickable" data-insert="<pl_answer_panel>|</pl_answer_panel>">
+                                <i class="fa fa-fw fa-terminal"></i> Answer panel
+                            </a>
+                          </div>
+                        </div>
+
+                        <div class="btn-group" role="group">
+                          <button id="insert-question-element" type="button"
+                            class="btn btn-primary dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Elements
+                          </button>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item clickable" data-insert="<pl_multiple_choice>|</pl_multiple_choice>">
+                                <i class="fa fa-fw fa-dot-circle-o"></i> Multiple choice
+                            </a>
+                            <a class="dropdown-item clickable" data-insert='<pl_answer correct="false">|</pl_answer>'>
+                                <i class="fa fa-fw fa-dot-circle-o"></i> Multiple choice answer
+                            </a>
+                            <a class="dropdown-item clickable">
+                                <i class="fa fa-fw fa-check-square-o"></i> Checkboxes
+                            </a>
+                            <a class="dropdown-item clickable" data-insert="<pl_number_input>">
+                                <i class="fa fa-fw fa-terminal"></i> Number input
+                            </a>
+                            <a class="dropdown-item clickable">
+                                <i class="fa fa-fw fa-th"></i> Matrix output
+                            </a>
+                            <a class="dropdown-item clickable">
+                                <i class="fa fa-fw fa-file-image-o"></i> Static image
+                            </a>
+                            <a class="dropdown-item clickable">
+                                <i class="fa fa-fw fa-picture-o"></i> Dynamic image
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+
+                  <div class="btn-group">
+                      <button type="button" class="btn btn-success save-button btn-click">
+                          <i class="fa fa-spinner fa-spin"></i>
+                          <span>Save</span>
+                      </button>
+                      <a class="btn btn-primary" href="." target="_blank">Preview</a>
+                  </div>
+                </div>
+              </div>
+              <div id="question-html-editor"><%= questionHtml %></div>
+            </div>
+            <div class="tab-pane" id="server-python" role="tabpanel" data-editable="true">
+                <div style="padding:5px 15px">
+                    <div class="btn-toolbar justify-content-between" role="toolbar">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-click">
+                                Test
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success save-button btn-click">
+                                <i class="fa fa-spinner fa-spin"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              <div id="server-python-editor"><%= serverPython %></div>
+            </div>
+            <div class="tab-pane" id="client-files-upload" role="tabpanel" style="padding:15px;">
+                <form>
+                  <div class="form-group">
+                    <label for="client-file">Add files to use in this question.</label>
+                    <input type="file" class="form-control-file" id="client-file">
+                  </div>
+                </form>
+                <ul class="list-group">
+                <% questionFiles.forEach(function(questionFile) { %>
+                  <li class="list-group-item"><%= questionFile %></li>
+                <% }); %>
+                </ul>
+            </div>
+            <div class="tab-pane" id="course-files-upload" role="tabpanel" style="padding:15px;">
+                <form>
+                  <div class="form-group">
+                    <label for="client-file">Add files to use across all questions in this course.</label>
+                    <input type="file" class="form-control-file" id="client-file">
+                  </div>
+                </form>
+                <ul class="list-group">
+                <% courseFiles.forEach(function(courseFile) { %>
+                  <li class="list-group-item"><%= courseFile %></li>
+                <% }); %>
+                </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>

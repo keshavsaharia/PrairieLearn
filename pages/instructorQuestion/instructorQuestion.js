@@ -68,6 +68,8 @@ router.post('/', function(req, res, next) {
             if (ERR(err, next)) return;
             res.redirect(res.locals.urlPrefix + '/jobSequence/' + job_sequence_id);
         });
+    } else if (req.body.__action == 'edit') {
+        res.redirect(res.locals.urlPrefix + '/question/' + res.locals.question.id + '/edit');
     } else {
         return next(new Error('unknown __action: ' + req.body.__action));
     }

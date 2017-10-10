@@ -19,12 +19,14 @@
   <body>
     <%- include('../partials/navbar', {navPage: ''}); %>
     <div id="content" class="container">
-      <div class="panel panel-primary">
-        <div class="panel-heading">
-          <h3 class="panel-title">Question <%= question.qid %></h3>
-        </div>
 
-        <table class="table table-condensed table-hover two-column-description">
+        <%- include('../partials/question', {question_context: 'instructor'}); %>
+        <br>
+
+      <div class="card card-default">
+        <h3 class="card-header">Details</h3>
+
+        <table class="table table-condensed table-hover two-column-description no-margin">
           <tbody>
             <tr>
               <th>Title</th>
@@ -71,8 +73,6 @@
           </tbody>
         </table>
       </div>
-
-      <%- include('../partials/question', {question_context: 'instructor'}); %>
 
     </div>
   </body>
